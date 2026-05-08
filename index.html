@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calculadora TJPE 2026 - V39</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 10px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 700px; background: #fff; padding: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius: 10px; box-sizing: border-box; }
+        .dashboard-controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
+        @media (min-width: 768px) { .dashboard-controls { display: grid; grid-template-columns: 220px 1fr; } }
+        .sidebar-panel { display: flex; flex-direction: column; gap: 8px; }
+        .group-box { padding: 10px; border-radius: 8px; border: 1px solid #dee2e6; }
+        .bg-efetivo { background-color: #e8f5e9; border-left: 4px solid #2e7d32; }
+        .bg-comissionado { background-color: #fffde7; border-left: 4px solid #fbc02d; }
+        .bg-magistrado { background-color: #ffebee; border-left: 4px solid #c62828; }
+        .radio-group { display: flex; flex-direction: column; gap: 4px; }
+        .radio-label { display: flex; align-items: center; gap: 8px; font-size: 11px; cursor: pointer; color: #495057; padding: 4px 0; }
+        .main-panel { background-color: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #dee2e6; border-top: 4px solid #204b7b; }
+        .input-stack { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
+        .input-grid-compact { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .input-item { display: flex; flex-direction: column; }
+        .input-item label { font-size: 10px; font-weight: 700; margin-bottom: 4px; color: #204b7b; text-transform: uppercase; }
+        .input-item input, .input-item select { padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box; }
+        .input-item select:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; }
+        .btn-download { margin-top: 10px; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 13px; }
+        .contracheque-wrapper { width: 100%; overflow: hidden; border: 1px solid #eee; border-radius: 4px; }
+        #area-contracheque { width: 100%; background-color: white; padding: 0; box-sizing: border-box; }
+        .header-container { background-color: #204b7b; padding: 8px; text-align: center; }
+        .header-titulo { color: white; font-size: 14px; font-weight: bold; }
+        .info-row { padding: 8px; background: #f8f9fa; border: 1px solid #dee2e6; border-top: none; display: grid; grid-template-columns: 1fr 1.5fr; gap: 5px; }
+        @media (min-width: 480px) { .info-row { grid-template-columns: 80px 1fr 80px 1fr; padding: 10px; gap: 8px; } }
+        .info-label { font-weight: 800; color: #204b7b; text-transform: uppercase; font-size: 8px; }
+        .info-value { font-size: 10px; color: #333; border-bottom: 1px solid #e9ecef; min-height: 14px; }
+        table { width: 100%; border-collapse: collapse; margin: 8px 0; table-layout: fixed; }
+        th, td { border: 1px solid #dee2e6; padding: 6px; font-size: 10px; }
+        th { background-color: #f1f3f5; color: #204b7b; text-align: left; }
+        .td-valor { text-align: right; font-family: monospace; font-size: 11px; width: 35%; }
+        .row-total { background-color: #e7f1ff; font-weight: bold; }
+        .row-liquido { background-color: #fff3cd; font-weight: bold; font-size: 12px; border: 2px solid #ffecb5; }
+        .rodape { text-align: center; font-size: 9px; color: #6c757d; padding: 15px; border-top: 1px solid #dee2e6; display: flex; flex-direction: column; align-items: center; }
+        .footer-logos { display: flex; justify-content: center; gap: 10px; margin-bottom: 5px; width: 100%; }
+        .footer-logo { height: 30px; width: auto; max-width: 100px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="dashboard-controls">
+        <aside class="sidebar-panel">
+            <div class="group-box bg-efetivo">
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="vinculo" value="TECNICO" checked> Técnico</label>
+                    <label class="radio-label"><input type="radio" name="vinculo" value="ANALISTA"> Analista</label>
+                    <label class="radio-label"><input type="radio" name="vinculo" value="OFICIAL"> Oficial de Justiça</label>
+                </div>
+            </div>
+            <div class="group-box bg-comissionado">
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="vinculo" value="COMISSIONADO"> Comiss. (Exclusivo)</label>
+                </div>
+            </div>
+            <div class="group-box bg-magistrado">
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="vinculo" value="MAGISTRADO"> Magistrado</label>
+                </div>
+            </div>
+            <button class="btn-download" onclick="baixarImagem()">💾 Salvar Imagem</button>
+        </aside>
+
+        <main class="main-panel">
+            <div class="input-stack">
+                <div class="input-item" id="item-padrao">
+                    <label>Padrão Salarial</label>
+                    <select id="select-padrao"></select>
+                </div>
+                <div class="input-item">
+                    <label>Cargo Comissionado (CC)</label>
+                    <select id="select-sigla-cargo"><option value="">-- Selecione --</option></select>
+                </div>
+                <div class="input-item">
+                    <label>Função Gratificada (FG)</label>
+                    <select id="select-sigla-fg"><option value="">-- Selecione --</option></select>
+                </div>
+                <div class="input-item" id="item-magistrado" style="display:none;">
+                    <label>Nível Magistratura</label>
+                    <select id="select-nivel-magistrado"><option value="">-- Selecione --</option></select>
+                </div>
+            </div>
+            <hr>
+            <div class="input-grid-compact">
+                <div class="input-item" id="box-alim-geral"><label>Aux. Alimentação</label><input type="number" id="input-alim" value="1359.28" step="0.01"></div>
+                <div class="input-item"><label>Aux. Saúde (Editável)</label><input type="number" id="input-saude" value="0.00" step="0.01"></div>
+                <div class="input-item" id="box-transporte-comum">
+                    <label>Aux. Transporte</label>
+                    <input type="number" id="input-transp" value="246.40" step="0.01">
+                    <label style="font-size: 8px; margin-top: 4px; color: #d63384; font-weight: bold;">
+                        <input type="checkbox" id="check-pecunia"> PECÚNIA X2
+                    </label>
+                </div>
+                <div class="input-item" id="box-indenizacao-transp" style="display:none;"><label>Indenização Transp.</label><input type="number" id="input-indenizacao" value="2065.00" step="0.01"></div>
+                <div class="input-item" id="item-risco-vida" style="display:none;"><label>Risco de Vida</label><input type="number" id="input-risco" value="595.00" step="0.01"></div>
+            </div>
+        </main>
+    </div>
+
+    <div class="contracheque-wrapper">
+        <div id="area-contracheque">
+            <div class="header-container"><span class="header-titulo">EXEMPLO DE CONTRACHEQUE - 2026</span></div>
+            <div class="info-row">
+                <div class="info-label">Simb. Cargo:</div> <div class="info-value" id="lbl-sigla-cargo">-</div>
+                <div class="info-label">Simb. Função:</div> <div class="info-value" id="lbl-sigla-fg">-</div>
+                <div class="info-label">Vínculo:</div> <div class="info-value" id="lbl-nome-cargo">Técnico</div>
+                <div class="info-label" id="label-detalhe-tipo">Padrão:</div> <div class="info-value" id="lbl-nome-fg">-</div>
+            </div>
+            <table><thead><tr><th>RUBRICA</th><th class="td-valor">VALOR</th></tr></thead><tbody id="corpo-vencimentos"></tbody></table>
+            <table><tbody id="corpo-descontos"></tbody></table>
+            <div class="rodape">
+                <div class="footer-logos">
+                    <img src="https://i.ibb.co/FkLCjrFV/Capturar-removebg-preview-1.png" class="footer-logo" crossorigin="anonymous"> 
+                    <img src="https://i.ibb.co/yc32bwv5/Logo-DGF-upscaled-Photoroom.png" class="footer-logo" crossorigin="anonymous">
+                </div>
+                <div>DGF-NUGOV-2026</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const tabelaSalarial = [
+        {p: "P00", tecnico: 5858.86, oficial: 7252.72, analista: 7634.45},
+        {p: "P01", tecnico: 6005.32, oficial: 7434.03, analista: 7825.32},
+        {p: "P02", tecnico: 6164.45, oficial: 7631.04, analista: 8032.69},
+        {p: "P03", tecnico: 6337.08, oficial: 7844.72, analista: 8257.59},
+        {p: "P04", tecnico: 6524.04, oficial: 8076.13, analista: 8501.20},
+        {p: "P05", tecnico: 6726.26, oficial: 8326.49, analista: 8764.72},
+        {p: "P06", tecnico: 6944.85, oficial: 8597.11, analista: 9049.60},
+        {p: "P07", tecnico: 7181.00, oficial: 8889.42, analista: 9357.29},
+        {p: "P08", tecnico: 7435.92, oficial: 9204.99, analista: 9689.45},
+        {p: "P09", tecnico: 7711.05, oficial: 9545.58, analista: 10047.97},
+        {p: "P10", tecnico: 8007.94, oficial: 9913.07, analista: 10434.83},
+        {p: "P11", tecnico: 8328.22, oficial: 10309.59, analista: 10852.20},
+        {p: "P12", tecnico: 8827.94, oficial: 10928.18, analista: 11503.34},
+        {p: "P13", tecnico: 9445.90, oficial: 11693.13, analista: 12308.58},
+        {p: "P14", tecnico: 10201.54, oficial: 12628.60, analista: 13293.27},
+        {p: "P15", tecnico: 11119.71, oficial: 13765.15, analista: 14489.66},
+        {p: "P16", tecnico: 12231.66, oficial: 15141.69, analista: 15938.64},
+        {p: "P17", tecnico: 13577.14, oficial: 16807.28, analista: 17691.87},
+        {p: "P18", tecnico: 15206.39, oficial: 18824.14, analista: 19814.88},
+        {p: "P19", tecnico: 17183.24, oficial: 21271.28, analista: 22390.82},
+        {p: "P20", tecnico: 19588.89, oficial: 24249.28, analista: 25525.53},
+        {p: "P21", tecnico: 22527.23, oficial: 27886.68, analista: 29354.38}
+    ];
+
+    const comissionadosData = [
+        {s: "PJC-V", b: 3092.36, r: 3710.83}, {s: "PJC-IV", b: 4216.80, r: 5060.16},
+        {s: "PJC-VI", b: 2634.71, r: 3161.65}, {s: "PJC-III", b: 7028.09, r: 8433.71},
+        {s: "PJC-II", b: 7590.35, r: 9108.42}, {s: "PJC-VII", b: 2266.58, r: 2719.90},
+        {s: "APJC", b: 1319.77, r: 1583.72}, {s: "MPJC", b: 6559.35, r: 7871.22},
+        {s: "PJC", b: 8433.72, r: 10120.46}, {s: "SPJC", b: 8996.05, r: 10795.26},
+        {s: "DSPJC", b: 7590.35, r: 9108.42}, {s: "DASPJC", b: 7028.09, r: 8433.71},
+        {s: "DGPJC", b: 13078.07, r: 15693.68}, {s: "DGAPJC", b: 12260.68, r: 14712.82}
+    ];
+
+    const funcoesGratificadasData = [
+        {s: "FSJ-3", v: 1201.24}, {s: "FAP-AJ1G", v: 635.36}, {s: "FGAGD", v: 8268.36},
+        {s: "FGASCPR", v: 9108.41}, {s: "FGAM", v: 3078.65}, {s: "FATUJ", v: 8045.93},
+        {s: "FGATCPR", v: 8433.72}, {s: "FGJ-2", v: 1501.62}, {s: "FGAI", v: 2462.9},
+        {s: "FGJ-1", v: 2102.28}, {s: "FGCNSPR", v: 3997.02}, {s: "FGCNCPR", v: 3997.02},
+        {s: "FGNDM-1", v: 3078.65}, {s: "FGCSJD", v: 3997.02}, {s: "FGCSJ-1", v: 3534.76},
+        {s: "FGNCON", v: 3078.65}, {s: "FGNDM-2", v: 1441.36}, {s: "FGNDR", v: 3534.76},
+        {s: "CPL", v: 3142.11}, {s: "FGCJ-1", v: 1944.39}, {s: "FGCNSC", v: 1944.39},
+        {s: "FGCCRC", v: 7994.07}, {s: "FJCP", v: 2295.26}, {s: "FGCNPR", v: 5060.17},
+        {s: "FGCNRC", v: 7994.07}, {s: "FGDGD", v: 8929.83}, {s: "FGDPR", v: 8633.58},
+        {s: "FGDEPR", v: 7994.07}, {s: "FGDEGD", v: 8268.36}, {s: "FGDR", v: 8633.58},
+        {s: "FAJ-1", v: 1051.13}, {s: "FAT", v: 2102.28}, {s: "FMT", v: 1051.13},
+        {s: "FSJ-1", v: 1201.24}, {s: "FGJ-3", v: 1051.13}, {s: "FGGUJ-1", v: 1441.36},
+        {s: "FGGPE-1", v: 8633.58}, {s: "FGGPE-2", v: 3997.02}, {s: "FGGPE-3", v: 2102.28},
+        {s: "FGGUE", v: 3997.02}, {s: "FGGUE-2", v: 1441.36}, {s: "FGGC", v: 1441.36},
+        {s: "FLJ-1", v: 1201.24}, {s: "FGMN-1", v: 1861.5}, {s: "RG", v: 2462.9},
+        {s: "FAJ-3", v: 450.47}, {s: "FGSCPR", v: 10795.26}, {s: "FGSS", v: 2474},
+        {s: "FGSECPR", v: 10120.47}, {s: "FGSPR", v: 3997.02}, {s: "FGSCRC", v: 3997.02},
+        {s: "FGSNRC", v: 3997.02}
+    ];
+
+    const magistradosData = [{n:'JUIZ 1ª ENTRÂNCIA', v:35877.28},{n:'JUIZ 2ª ENTRÂNCIA', v:37765.55},{n:'JUIZ 3ª ENTRÂNCIA', v:39753.22},{n:'DESEMBARGADOR', v:41845.49}];
+    const TETO_RGPS = 8475.55;
+
+    window.onload = () => { populateDropdowns(); handleModeChange(); };
+
+    function populateDropdowns() {
+        const sP = document.getElementById('select-padrao');
+        const sCC = document.getElementById('select-sigla-cargo');
+        const sFG = document.getElementById('select-sigla-fg');
+        const sMag = document.getElementById('select-nivel-magistrado');
+        tabelaSalarial.forEach(item => sP.add(new Option(item.p, item.p)));
+        comissionadosData.forEach(c => sCC.add(new Option(c.s, c.s)));
+        funcoesGratificadasData.forEach(f => sFG.add(new Option(f.s, f.s)));
+        magistradosData.forEach((m, i) => sMag.add(new Option(m.n, i)));
+    }
+
+    function baixarImagem() {
+        html2canvas(document.getElementById('area-contracheque'), {scale:2, useCORS: true}).then(c => {
+            let l = document.createElement('a'); l.download = 'Contracheque_TJPE.png'; l.href = c.toDataURL(); l.click();
+        });
+    }
+
+    document.querySelectorAll('input[name="vinculo"]').forEach(r => r.addEventListener('change', handleModeChange));
+
+    function handleModeChange() {
+        const mode = document.querySelector('input[name="vinculo"]:checked').value;
+        const sCC = document.getElementById('select-sigla-cargo');
+        const sFG = document.getElementById('select-sigla-fg');
+        
+        // Regra solicitada: Travar campos e colocar N/A para Magistrados
+        if(mode === 'MAGISTRADO') {
+            sCC.disabled = true;
+            sFG.disabled = true;
+            sCC.innerHTML = '<option value="">N/A</option>';
+            sFG.innerHTML = '<option value="">N/A</option>';
+        } else {
+            sCC.disabled = false;
+            // Repopular Cargo
+            sCC.innerHTML = '<option value="">-- Selecione --</option>';
+            comissionadosData.forEach(c => sCC.add(new Option(c.s, c.s)));
+            
+            // FG disponível apenas para efetivos
+            if(mode === 'COMISSIONADO') {
+                sFG.disabled = true;
+                sFG.innerHTML = '<option value="">N/A</option>';
+            } else {
+                sFG.disabled = false;
+                sFG.innerHTML = '<option value="">-- Selecione --</option>';
+                funcoesGratificadasData.forEach(f => sFG.add(new Option(f.s, f.s)));
+            }
+        }
+
+        document.getElementById('item-padrao').style.display = ['TECNICO', 'ANALISTA', 'OFICIAL'].includes(mode) ? 'flex' : 'none';
+        document.getElementById('item-magistrado').style.display = (mode === 'MAGISTRADO' ? 'flex' : 'none');
+        document.getElementById('box-alim-geral').style.display = (mode === 'MAGISTRADO' ? 'none' : 'flex');
+        document.getElementById('box-transporte-comum').style.display = (['MAGISTRADO', 'OFICIAL'].includes(mode) ? 'none' : 'flex');
+        document.getElementById('box-indenizacao-transp').style.display = (mode === 'OFICIAL' ? 'flex' : 'none');
+        document.getElementById('item-risco-vida').style.display = (mode === 'OFICIAL' ? 'flex' : 'none');
+        updateContracheque();
+    }
+
+    [document.getElementById('select-padrao'), document.getElementById('select-sigla-cargo'), document.getElementById('select-sigla-fg'), document.getElementById('select-nivel-magistrado'), document.getElementById('input-alim'), document.getElementById('input-transp'), document.getElementById('input-indenizacao'), document.getElementById('input-risco'), document.getElementById('check-pecunia'), document.getElementById('input-saude')].forEach(el => {
+        el.addEventListener('change', updateContracheque);
+        if(el.type === 'number') el.addEventListener('input', updateContracheque);
+    });
+
+    function updateContracheque() {
+        const mode = document.querySelector('input[name="vinculo"]:checked').value;
+        let salBase = 0, vRep = 0, vFG = 0, nDetalhe = "-";
+        const f = v => v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+
+        if(['TECNICO', 'ANALISTA', 'OFICIAL'].includes(mode)) {
+            const padraoSel = document.getElementById('select-padrao').value;
+            const dadosPadrao = tabelaSalarial.find(x => x.p === padraoSel);
+            if(dadosPadrao) {
+                if(mode === 'TECNICO') salBase = dadosPadrao.tecnico;
+                else if(mode === 'ANALISTA') salBase = dadosPadrao.analista;
+                else if(mode === 'OFICIAL') salBase = dadosPadrao.oficial;
+                nDetalhe = padraoSel;
+            }
+        } else if(mode === 'MAGISTRADO') {
+            const idx = document.getElementById('select-nivel-magistrado').value;
+            if(idx !== "") { salBase = magistradosData[idx].v; nDetalhe = magistradosData[idx].n; }
+        }
+
+        const siglaCC = document.getElementById('select-sigla-cargo').value;
+        if(siglaCC && mode !== 'MAGISTRADO') {
+            const cc = comissionadosData.find(x => x.s === siglaCC);
+            if(cc) { vRep = cc.r; if(mode === 'COMISSIONADO') salBase = cc.b; }
+        }
+
+        const siglaFG = document.getElementById('select-sigla-fg').value;
+        if(siglaFG && !['MAGISTRADO', 'COMISSIONADO'].includes(mode)) {
+            const fg = funcoesGratificadasData.find(x => x.s === siglaFG);
+            if(fg) vFG = fg.v;
+        }
+
+        if (document.activeElement !== document.getElementById('input-saude')) {
+            let sug = mode === 'MAGISTRADO' ? salBase * 0.15 : (mode === 'COMISSIONADO' ? (salBase + vRep) * 0.10 : salBase * 0.10);
+            document.getElementById('input-saude').value = sug.toFixed(2);
+        }
+        let saudeVal = parseFloat(document.getElementById('input-saude').value) || 0;
+
+        let labelBase = mode === 'MAGISTRADO' ? 'SUBSÍDIO' : (mode === 'COMISSIONADO' ? 'SALÁRIO BASE' : 'VENCIMENTO');
+        let htmlVen = `<tr><td>${labelBase}</td><td class="td-valor">${f(salBase)}</td></tr>`;
+        if(mode !== 'MAGISTRADO') {
+            if(vRep > 0) htmlVen += `<tr><td>REPRESENTAÇÃO</td><td class="td-valor">${f(vRep)}</td></tr>`;
+            if(vFG > 0) htmlVen += `<tr><td>GRATIFICAÇÃO (FG)</td><td class="td-valor">${f(vFG)}</td></tr>`;
+        }
+
+        let bruto = salBase + vRep + vFG;
+        if (mode !== 'MAGISTRADO') {
+            const alim = parseFloat(document.getElementById('input-alim').value) || 0;
+            const risco = mode === 'OFICIAL' ? (parseFloat(document.getElementById('input-risco').value) || 0) : 0;
+            let transp = mode === 'OFICIAL' ? (parseFloat(document.getElementById('input-indenizacao').value) || 0) : ((parseFloat(document.getElementById('input-transp').value) || 0) * (document.getElementById('check-pecunia').checked ? 2 : 1));
+            if(risco > 0) htmlVen += `<tr><td>RISCO DE VIDA</td><td class="td-valor">${f(risco)}</td></tr>`;
+            htmlVen += `<tr><td>AUXILIO ALIMENTAÇÃO</td><td class="td-valor">${f(alim)}</td></tr>`;
+            htmlVen += `<tr><td>TRANSPORTE</td><td class="td-valor">${f(transp)}</td></tr>`;
+            bruto += alim + transp + risco;
+        }
+        htmlVen += `<tr><td>AUXILIO SAÚDE</td><td class="td-valor">${f(saudeVal)}</td></tr>`;
+        bruto += saudeVal;
+        htmlVen += `<tr class="row-total"><td>BRUTO</td><td class="td-valor">${f(bruto)}</td></tr>`;
+        document.getElementById('corpo-vencimentos').innerHTML = htmlVen;
+
+        let htmlDesc = "", totalDesc = 0, prevBase = 0;
+        if (mode === 'MAGISTRADO') {
+            const funaprev = TETO_RGPS * 0.14; 
+            const complement = (salBase - TETO_RGPS) * 0.085;
+            htmlDesc += `<tr><td>FUNAPREV (14% TETO)</td><td class="td-valor">${f(funaprev)}</td></tr>`;
+            htmlDesc += `<tr><td>PREV. COMPLEMENTAR</td><td class="td-valor">${f(Math.max(complement, 0))}</td></tr>`;
+            prevBase = funaprev + Math.max(complement, 0);
+        } else {
+            if (['TECNICO', 'ANALISTA', 'OFICIAL'].includes(mode)) {
+                prevBase = salBase * 0.14;
+            } else if (mode === 'COMISSIONADO') {
+                const bpc = salBase + vRep;
+                const fxs = [{l:1621, a:0.075}, {l:2902.84, a:0.09}, {l:4354.27, a:0.12}, {l:8475.55, a:0.14}];
+                let ant = 0; for (let fz of fxs) { let v = Math.min(bpc, fz.l) - ant; if (v > 0) prevBase += v * fz.a; ant = fz.l; if (bpc <= fz.l) break; }
+            }
+            htmlDesc += `<tr><td>${mode === 'COMISSIONADO' ? 'INSS' : 'PREVIDÊNCIA'}</td><td class="td-valor">${f(prevBase)}</td></tr>`;
+        }
+        totalDesc = prevBase;
+
+        const bIR = (salBase + vRep + vFG) - prevBase;
+        const bIR2 = (salBase + vRep + vFG);
+        let irC = 0;
+        if (bIR > 4664.68) irC = (bIR * 0.275) - 908.73; else if (bIR > 3751.05) irC = (bIR * 0.225) - 675.49; else if (bIR > 2826.65) irC = (bIR * 0.15) - 394.16; else if (bIR > 2428.80) irC = (bIR * 0.075) - 182.16;
+        let irF = (bIR2 <= 5000) ? 0 : Math.max(irC - (978.62 - (0.133145 * bIR2)), 0);
+        if (bIR2 > 7350) irF = Math.max(irC, 0);
+        htmlDesc += `<tr><td>IMPOSTO DE RENDA</td><td class="td-valor">${f(Math.max(irF, 0))}</td></tr>`;
+        totalDesc += Math.max(irF, 0);
+
+        if (!['MAGISTRADO', 'OFICIAL'].includes(mode)) {
+            const dTr = ((salBase / 30) * 0.005) * 22;
+            htmlDesc += `<tr><td>DESC. TRANSPORTE</td><td class="td-valor">${f(dTr)}</td></tr>`;
+            totalDesc += dTr;
+        }
+
+        htmlDesc += `<tr class="row-total"><td>TOTAL DESCONTOS</td><td class="td-valor">${f(totalDesc)}</td></tr>`;
+        htmlDesc += `<tr class="row-liquido"><td>LÍQUIDO</td><td class="td-valor">${f(bruto - totalDesc)}</td></tr>`;
+        document.getElementById('corpo-descontos').innerHTML = htmlDesc;
+
+        document.getElementById('lbl-sigla-cargo').textContent = (mode === 'MAGISTRADO' ? "-" : (siglaCC || "-"));
+        document.getElementById('lbl-sigla-fg').textContent = (mode === 'MAGISTRADO' || mode === 'COMISSIONADO') ? "-" : (siglaFG || "-");
+        document.getElementById('lbl-nome-cargo').textContent = mode;
+        document.getElementById('lbl-nome-fg').textContent = nDetalhe;
+    }
+</script>
+</body>
+</html>
