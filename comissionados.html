@@ -6,7 +6,7 @@
  <title>Calculadora TJPE 2026 - Comissionados</title>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
  <style>
- /* CSS ORIGINAL INTEGRALMENTE PRESERVADO[cite: 3, 6] */
+ /* CSS ORIGINAL INTEGRALMENTE PRESERVADO */
  * { box-sizing: border-box; }
  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 10px; display: flex; justify-content: center; transition: background 0.3s; color: #333; }
  .container { width: 100%; max-width: 1200px; display: flex; gap: 20px; align-items: flex-start; }
@@ -26,6 +26,11 @@
  .input-item label { font-size: 10px; font-weight: 700; color: #204b7b; text-transform: uppercase; }
  .input-item input, .input-item select { padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; color: #333; }
  .input-item input[readonly] { background-color: #e9ecef; }
+
+ /* ESTILOS DO GRUPO INDENIZATÓRIOS */
+ .group-box { grid-column: 1 / -1; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; background: #f8f9fa; position: relative; margin-top: 10px; }
+ .group-title { position: absolute; top: -10px; left: 15px; background: #fff; padding: 0 8px; font-size: 10px; font-weight: bold; color: #204b7b; text-transform: uppercase; border: 1px solid #dee2e6; border-radius: 4px; }
+ .group-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; align-items: flex-start; }
  
  .contracheque-wrapper { width: 100%; overflow: hidden; border: 1px solid #eee; border-radius: 4px; margin-top: 20px; }
  #area-contracheque { width: 100%; background-color: white; padding: 0; box-sizing: border-box; }
@@ -52,19 +57,24 @@
  .dark-toggle-btn { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 12px 20px; border-radius: 30px; border: none; background: #333; color: #fff; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 
  body.dark-mode { background-color: #0d0d0d; color: #eee; }
- body.dark-mode .main-content, body.dark-mode .side-panel, body.dark-mode .variables-panel, body.dark-mode #area-contracheque { background-color: #1a1a1a !important; border-color: #333 !important; }
+ body.dark-mode .main-content, body.dark-mode .side-panel, body.dark-mode .variables-panel, body.dark-mode #area-contracheque, body.dark-mode .group-box { background-color: #1a1a1a !important; border-color: #333 !important; }
  body.dark-mode th, body.dark-mode .info-row, body.dark-mode .comp-card { background-color: #262626 !important; border-color: #3d3d3d !important; color: #fff !important; }
  body.dark-mode td, body.dark-mode .info-value, body.dark-mode p, body.dark-mode .info-label, body.dark-mode span { color: #fff !important; }
  body.dark-mode .input-item input, body.dark-mode .input-item select { background-color: #2a2a2a; border-color: #444; color: #fff; }
  body.dark-mode .row-total { background-color: #1e3a5a; }
  body.dark-mode .row-liquido { background-color: #4a4a10; color: #fff !important; }
- body.dark-mode label, body.dark-mode .variables-title { color: #fbc02d !important; }
+ body.dark-mode label, body.dark-mode .variables-title, body.dark-mode .group-title { color: #fbc02d !important; }
 
  @media (max-width: 1000px) {
   .container { flex-direction: column; align-items: center; }
   .side-panel { width: 100%; position: static; }
   .dashboard-header { flex-direction: column; }
   .vinculo-display, .btn-download-container { width: 100%; }
+ }
+
+ @media (max-width: 768px) {
+  .input-grid { grid-template-columns: 1fr; }
+  .group-grid { grid-template-columns: 1fr; }
  }
  </style>
 </head>
@@ -88,31 +98,39 @@
  <label>Símbolo do Cargo</label>
  <select id="select-sigla-cargo"></select>
  </div>
- <div class="input-item">
- <label>Aux. Saúde (Base)</label>
- <input type="text" id="input-saude-mask" value="0,00" oninput="mascaraMoeda(this)">
- <label class="checkbox-label"><input type="checkbox" id="check-saude-extra"> +50% (>50 anos / Doença)</label>
- </div>
- <div class="input-item">
- <label>Aux. Transporte (Automático)</label>
- <input type="text" id="input-transp-mask" value="246,40" readonly>
- <label class="checkbox-label"><input type="checkbox" id="check-pecunia"> Pecúnia Duplicada</label>
- </div>
- <div class="input-item">
- <label>Dias Úteis (Calcula Transporte)</label>
- <input type="number" id="input-dias-uteis" value="22" min="0" max="31" oninput="updateContracheque()">
- </div>
- <div class="input-item">
- <label>Qtd. Filhos (Creche)</label>
- <input type="number" id="input-filhos-qtd" value="0" min="0" oninput="updateContracheque()">
- </div>
+ 
  <div class="input-item">
  <label>Qtd. Dependentes (IR)</label>
  <input type="number" id="input-dep-ir" value="0" min="0" oninput="updateContracheque()">
  </div>
- <div class="input-item">
- <label>Aux. Alimentação (Calculado)</label>
- <input type="text" id="input-alim-mask" value="1.359,28" readonly>
+
+ <!-- Grupo Indenizatórios -->
+ <div class="group-box">
+  <div class="group-title">Indenizatórios</div>
+  <div class="group-grid">
+   <div class="input-item">
+    <label>Aux. Saúde (Base)</label>
+    <input type="text" id="input-saude-mask" value="0,00" oninput="mascaraMoeda(this)">
+    <label class="checkbox-label"><input type="checkbox" id="check-saude-extra"> +50% (>50 anos / Doença)</label>
+   </div>
+   <div class="input-item">
+    <label>Aux. Transporte</label>
+    <input type="text" id="input-transp-mask" value="246,40" readonly>
+    <label class="checkbox-label"><input type="checkbox" id="check-pecunia"> Pecúnia Duplicada</label>
+   </div>
+   <div class="input-item">
+    <label>Dias Úteis</label>
+    <input type="number" id="input-dias-uteis" value="22" min="0" max="31" oninput="updateContracheque()">
+   </div>
+   <div class="input-item">
+    <label>Qtd. Filhos (Creche)</label>
+    <input type="number" id="input-filhos-qtd" value="0" min="0" oninput="updateContracheque()">
+   </div>
+   <div class="input-item">
+    <label>Aux. Alimentação</label>
+    <input type="text" id="input-alim-mask" value="1.359,28" readonly>
+   </div>
+  </div>
  </div>
  </div>
  </section>
@@ -141,16 +159,16 @@
  </div>
 
  <aside class="side-panel">
- <h3 style="color: #204b7b; margin-top: 0;">📊 Comparativo Detalhado</h3>
- <button class="btn-add-comp" onclick="addSituacao()">➕ Fixar Cenário Atual</button>
+ <h3 style="color: #204b7b; margin-top: 0;">📊 Comparativo</h3>
+ <button class="btn-add-comp" onclick="addSituacao()">➕Adicionar Cenário Atual</button>
  <div id="lista-comparativos"></div>
  </aside>
 </div>
 
 <script>
- /* LÓGICA E DADOS ORIGINAIS PRESERVADOS[cite: 3, 6] */
- const AJUSTES_SALARIAIS = [1.00];
- const AJUSTES_ALIMENTACAO = [1.00];
+ /* LÓGICA E DADOS ORIGINAIS PRESERVADOS */
+ const AJUSTES_SALARIAIS = [1.053];
+ const AJUSTES_ALIMENTACAO = [1.053];
  const comissionadosData = [{s: "APJC", b: 1319.77, r: 1583.72},{s: "DGAPJC", b: 12260.68, r: 14712.82},{s: "DGPJC", b: 13078.07, r: 15693.68},{s: "DASPJC", b: 7028.09, r: 8433.71},{s: "DSPJC", b: 7590.35, r: 9108.42},{s: "MPJC", b: 6559.35, r: 7871.22},{s: "PJC", b: 8433.72, r: 10120.46},{s: "PJC-II", b: 7590.35, r: 9108.42},{s: "PJC-III", b: 7028.09, r: 8433.71},{s: "PJC-IV", b: 4216.80, r: 5060.16},{s: "PJC-V", b: 3092.36, r: 3710.83},{s: "PJC-VI", b: 2634.71, r: 3161.65},{s: "PJC-VII", b: 2266.58, r: 2719.90},{s: "SPJC", b: 8996.05, r: 10795.26}];
  const getFatorAcumulado = (lista) => lista.reduce((acc, curr) => acc * curr, 1);
  function formatarParaMoeda(valor) { return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -171,16 +189,31 @@
   updateContracheque();
  };
 
+ /* ESTADO GLOBAL DO COMPARATIVO */
  let cData = {};
+ let ultimoLiquidoReferencia = 0;
 
  function addSituacao() {
   const container = document.getElementById('lista-comparativos');
   const id = Date.now();
   const card = document.createElement('div');
   card.className = 'comp-card'; card.id = `comp-${id}`;
+  
+  let liqAtualNumerico = parseFloat(cData.liq.replace(/[R$\s.]/g, '').replace(',', '.'));
+  let diffPercent = "";
+
+  if (ultimoLiquidoReferencia > 0) {
+      let perc = ((liqAtualNumerico - ultimoLiquidoReferencia) / ultimoLiquidoReferencia * 100).toFixed(2);
+      let classe = perc >= 0 ? "diff-up" : "diff-down";
+      let sinal = perc >= 0 ? "+" : "";
+      diffPercent = `<span class="diff-badge ${classe}">${sinal}${perc}%</span>`;
+  }
+  
+  ultimoLiquidoReferencia = liqAtualNumerico;
+
   card.innerHTML = `
    <button class="btn-remove-comp" onclick="document.getElementById('comp-${id}').remove()">X</button>
-   <div style="font-weight:bold; color:#204b7b; margin-bottom:5px; text-transform:uppercase;">CARGO: ${cData.cargo}</div>
+   <div style="font-weight:bold; color:#204b7b; margin-bottom:5px; text-transform:uppercase;">CARGO: ${cData.cargo} ${diffPercent}</div>
    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
     <div style="color:#c62828;"><b>INSS:</b> ${cData.prev}</div>
     <div style="color:#c62828;"><b>IR:</b> ${cData.ir}</div>
@@ -207,7 +240,6 @@
       document.getElementById('input-saude-mask').value = formatarParaMoeda(saudeSugerido);
   }
 
-  // REGRA SOLICITADA: CÁLCULO AUTOMÁTICO DO TRANSPORTE BASEADO NOS DIAS[cite: 3, 6]
   const diasUteis = parseInt(document.getElementById('input-dias-uteis').value) || 0;
   const valorPorDia = document.getElementById('check-pecunia').checked ? 22.40 : 11.20;
   const transporteCalculado = diasUteis * valorPorDia;
@@ -227,7 +259,6 @@
   const dTr = ((salBase / 30) * 0.005) * diasUteis;
   let totalDesc = inss + Math.max(irF, 0) + dTr;
 
-  /* ATUALIZAÇÃO DA TABELA[cite: 3, 6] */
   document.getElementById('corpo-vencimentos').innerHTML = `<tr><td>SALÁRIO BASE</td><td class="td-valor">${f(salBase)}</td></tr><tr><td>REPRESENTAÇÃO</td><td class="td-valor">${f(vRep)}</td></tr><tr><td>AUXILIO ALIMENTAÇÃO</td><td class="td-valor">${f(alim)}</td></tr><tr><td>TRANSPORTE</td><td class="td-valor">${f(transporteCalculado)}</td></tr><tr><td>AUXILIO SAÚDE</td><td class="td-valor">${f(saudeFinal)}</td></tr>` + (vCreche > 0 ? `<tr><td>AUXÍLIO CRECHE</td><td class="td-valor">${f(vCreche)}</td></tr>` : '') + `<tr class="row-total"><td>BRUTO</td><td class="td-valor">${f(bruto)}</td></tr>`;
   document.getElementById('corpo-descontos').innerHTML = `<tr><td>INSS (RGPS)</td><td class="td-valor">${f(inss)}</td></tr><tr><td>IMPOSTO DE RENDA</td><td class="td-valor">${f(Math.max(irF, 0))}</td></tr><tr><td>DESC. TRANSPORTE</td><td class="td-valor">${f(dTr)}</td></tr><tr class="row-total"><td>TOTAL DESCONTOS</td><td class="td-valor">${f(totalDesc)}</td></tr><tr class="row-liquido"><td>LÍQUIDO</td><td class="td-valor">${f(bruto - totalDesc)}</td></tr>`;
   document.getElementById('lbl-sigla-cargo').textContent = siglaCC;
