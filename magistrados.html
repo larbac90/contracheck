@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calculadora TJPE 2026 - Magistrados</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* CSS PADRONIZADO CONFORME COMISSIONADOS.HTML */
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 10px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 800px; background: #fff; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius: 10px; }
+        
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .vinculo-display { flex-grow: 1; padding: 15px; border-radius: 8px; border: 2px solid #c62828; background-color: #ffebee; text-align: center; font-weight: bold; color: #204b7b; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .btn-download-container { min-width: 180px; }
+        .btn-download { padding: 15px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 14px; text-transform: uppercase; }
+
+        .variables-panel { background-color: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #adb5bd; margin-bottom: 25px; }
+        .variables-title { text-align: center; color: #204b7b; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+
+        .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .input-item { display: flex; flex-direction: column; gap: 5px; }
+        .input-item label { font-size: 10px; font-weight: 700; color: #204b7b; text-transform: uppercase; }
+        .input-item input, .input-item select { padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; }
+        
+        .contracheque-wrapper { width: 100%; overflow: hidden; border: 1px solid #eee; border-radius: 4px; margin-top: 20px; }
+        #area-contracheque { width: 100%; background-color: white; padding: 0; box-sizing: border-box; }
+        .header-container { background-color: #204b7b; padding: 8px; text-align: center; }
+        .header-titulo { color: white; font-size: 14px; font-weight: bold; }
+        
+        table { width: 100%; border-collapse: collapse; margin: 0; table-layout: fixed; }
+        th, td { border: 1px solid #dee2e6; padding: 10px; font-size: 11px; }
+        th { background-color: #f1f3f5; color: #204b7b; text-align: left; text-transform: uppercase; }
+        .td-valor { text-align: right; font-family: monospace; font-size: 12px; width: 35%; font-weight: bold; }
+        
+        .row-bruto { background-color: #e7f1ff; font-weight: bold; color: #204b7b; }
+        .row-total-desc { background-color: #f8f9fa; font-weight: bold; }
+        .row-liquido { background-color: #fff3cd; font-weight: bold; font-size: 13px; border: 2px solid #ffecb5; }
+
+        .rodape { text-align: center; font-size: 9px; color: #6c757d; padding: 15px; border-top: 1px solid #dee2e6; display: flex; flex-direction: column; align-items: center; }
+        .footer-logos { display: flex; gap: 15px; justify-content: center; margin-bottom: 10px; }
+        .footer-logo { height: 35px; width: auto; }
+
+        @media (max-width: 600px) {
+            .dashboard-header { flex-direction: column; }
+            .vinculo-display, .btn-download-container { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="dashboard-header">
+        <div class="vinculo-display">Magistrados</div>
+        <div class="btn-download-container">
+            <button class="btn-download" onclick="baixarImagem()">💾 Salvar Imagem</button>
+        </div>
+    </header>
+
+    <section class="variables-panel">
+        <div class="variables-title">Variáveis de Cálculo</div>
+        <div class="input-grid">
+            <div class="input-item">
+                <label>Nível da Magistratura</label>
+                <select id="mag"></select>
+            </div>
+            <div class="input-item">
+                <label>Auxílio Saúde</label>
+                <input type="number" id="saude" step="0.01">
+            </div>
+        </div>
+    </section>
+
+    <div class="contracheque-wrapper">
+        <div id="area-contracheque">
+            <div class="header-container"><span class="header-titulo">SIMULAÇÃO - MAGISTRADOS 2026</span></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>RUBRICA</th>
+                        <th class="td-valor">VALOR</th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-tabela">
+                    </tbody>
+            </table>
+            <div class="rodape">
+                <div style="background-color: #ffebee; color: #c62828; font-weight: bold; padding: 5px; border: 1px solid #c62828; border-radius: 4px; font-size: 11px; margin-bottom: 10px; width: 90%;">
+                    AVISO: ESTA É UMA SIMULAÇÃO ESTIMATIVA E NÃO SUBSTITUI O CONTRACHEQUE OFICIAL. VALORES SUJEITOS A ALTERAÇÕES.
+                </div>
+                <div class="footer-logos">
+                    <img src="https://i.ibb.co/FkLCjrFV/Capturar-removebg-preview-1.png" class="footer-logo"> 
+                    <img src="https://i.ibb.co/yc32bwv5/Logo-DGF-upscaled-Photoroom.png" class="footer-logo">
+                </div>
+                <div>DGF • NUGOV • TJPE</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* LÓGICA E VALORES ORIGINAIS PRESERVADOS */
+    const mags = [
+        {n:'JUIZ 1ª ENTRÂNCIA', v:35877.28},
+        {n:'JUIZ 2ª ENTRÂNCIA', v:37765.55},
+        {n:'JUIZ 3ª ENTRÂNCIA', v:39753.22},
+        {n:'DESEMBARGADOR', v:41845.49}
+    ];
+    
+    const TETO = 8475.55;
+    const AJUSTES_SALARIAIS = [1.00]; // Fator de atualização importado dos comissionados
+
+    const getFatorAcumulado = (lista) => lista.reduce((acc, curr) => acc * curr, 1);
+
+    window.onload = () => {
+        const s = document.getElementById('mag');
+        mags.forEach((m, i) => s.add(new Option(m.n, i)));
+        s.onchange = document.getElementById('saude').oninput = update;
+        update();
+    };
+
+    function update() {
+        const sel = mags[document.getElementById('mag').value];
+        const f = v => v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+        
+        // Aplicação do fator de atualização sobre o subsídio original
+        const fSal = getFatorAcumulado(AJUSTES_SALARIAIS);
+        const subsidioAtualizado = sel.v * fSal;
+
+        let sInput = document.getElementById('saude').value;
+        let sVal;
+
+        // Regra: Auxílio Saúde (15%) automático ao trocar nível ou se vazio
+        if (sInput === "" || document.activeElement.id !== 'saude') {
+            sVal = subsidioAtualizado * 0.15;
+            document.getElementById('saude').value = sVal.toFixed(2);
+        } else {
+            sVal = parseFloat(sInput) || 0;
+        }
+
+        const funaprev = TETO * 0.14;
+        const prevComp = (subsidioAtualizado - TETO) * 0.085;
+        const bIR = subsidioAtualizado - (funaprev + prevComp);
+        const ir = (bIR * 0.275) - 908.73;
+        const bruto = subsidioAtualizado + sVal;
+        const totalDesc = funaprev + prevComp + ir;
+        const liquido = bruto - totalDesc;
+
+        document.getElementById('corpo-tabela').innerHTML = `
+            <tr><td>SUBSÍDIO</td><td class="td-valor">${f(subsidioAtualizado)}</td></tr>
+            <tr><td>AUXÍLIO SAÚDE (15%)</td><td class="td-valor">${f(sVal)}</td></tr>
+            <tr class="row-bruto"><td>BRUTO</td><td class="td-valor">${f(bruto)}</td></tr>
+            <tr><td>FUNAPREV (14% TETO)</td><td class="td-valor">${f(funaprev)}</td></tr>
+            <tr><td>PREV. COMPLEMENTAR</td><td class="td-valor">${f(prevComp)}</td></tr>
+            <tr><td>IMPOSTO DE RENDA</td><td class="td-valor">${f(ir)}</td></tr>
+            <tr class="row-total-desc"><td>TOTAL DESCONTOS</td><td class="td-valor">${f(totalDesc)}</td></tr>
+            <tr class="row-liquido"><td>LÍQUIDO</td><td class="td-valor">${f(liquido)}</td></tr>
+        `;
+    }
+
+    function baixarImagem() {
+        html2canvas(document.getElementById('area-contracheque'), { scale: 2, useCORS: true }).then(c => {
+            let l = document.createElement('a'); 
+            l.download = 'Contracheque_Magistrado_2026.png'; 
+            l.href = c.toDataURL(); 
+            l.click();
+        });
+    }
+</script>
+</body>
+</html>

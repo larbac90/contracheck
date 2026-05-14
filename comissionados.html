@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+ <title>Calculadora TJPE 2026 - Comissionados</title>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+ <style>
+ /* CSS ORIGINAL INTEGRALMENTE PRESERVADO[cite: 3, 6] */
+ * { box-sizing: border-box; }
+ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 10px; display: flex; justify-content: center; transition: background 0.3s; color: #333; }
+ .container { width: 100%; max-width: 1200px; display: flex; gap: 20px; align-items: flex-start; }
+ .main-content { flex: 1; max-width: 800px; background: #fff; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius: 10px; }
+ 
+ .dashboard-header { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px; }
+ .vinculo-display { flex-grow: 1; padding: 15px; border-radius: 8px; border: 2px solid #fbc02d; background-color: #fff9c4; text-align: center; font-weight: bold; color: #204b7b; text-transform: uppercase; letter-spacing: 1px; }
+ 
+ .btn-download-container { min-width: 180px; }
+ .btn-download { padding: 15px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 14px; text-transform: uppercase; }
+
+ .variables-panel { background-color: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #adb5bd; margin-bottom: 25px; }
+ .variables-title { text-align: center; color: #204b7b; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+
+ .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+ .input-item { display: flex; flex-direction: column; gap: 5px; }
+ .input-item label { font-size: 10px; font-weight: 700; color: #204b7b; text-transform: uppercase; }
+ .input-item input, .input-item select { padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; color: #333; }
+ .input-item input[readonly] { background-color: #e9ecef; }
+ 
+ .contracheque-wrapper { width: 100%; overflow: hidden; border: 1px solid #eee; border-radius: 4px; margin-top: 20px; }
+ #area-contracheque { width: 100%; background-color: white; padding: 0; box-sizing: border-box; }
+ .header-container { background-color: #204b7b; padding: 8px; text-align: center; }
+ .header-titulo { color: white; font-size: 14px; font-weight: bold; }
+ .info-row { padding: 8px; background: #f8f9fa; border: 1px solid #dee2e6; border-top: none; display: grid; grid-template-columns: 80px 1fr 80px 1fr; gap: 8px; }
+ .info-label { font-weight: 800; color: #204b7b; text-transform: uppercase; font-size: 8px; }
+ .info-value { font-size: 10px; color: #333; border-bottom: 1px solid #e9ecef; min-height: 14px; }
+ table { width: 100%; border-collapse: collapse; margin: 8px 0; table-layout: fixed; }
+ th, td { border: 1px solid #dee2e6; padding: 6px; font-size: 10px; color: #333; }
+ th { background-color: #f1f3f5; color: #204b7b; text-align: left; }
+ .td-valor { text-align: right; font-family: monospace; font-size: 11px; width: 35%; font-weight: bold; }
+ .row-total { background-color: #e7f1ff; font-weight: bold; }
+ .row-liquido { background-color: #fff3cd; font-weight: bold; font-size: 12px; border: 2px solid #ffecb5; }
+ .rodape { text-align: center; font-size: 9px; color: #6c757d; padding: 15px; border-top: 1px solid #dee2e6; display: flex; flex-direction: column; align-items: center; }
+ .footer-logos { display: flex; gap: 15px; justify-content: center; margin-bottom: 10px; }
+ .footer-logo { height: 35px; width: auto; }
+ .checkbox-label { display: flex; align-items: center; gap: 5px; font-size: 9px; font-weight: 800; color: #204b7b; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
+
+ /* ESTILOS ADICIONAIS: PAINEL E DARK MODE[cite: 3, 6] */
+ .side-panel { width: 380px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-top: 5px solid #fbc02d; position: sticky; top: 10px; }
+ .btn-add-comp { width: 100%; padding: 12px; background: #204b7b; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
+ .comp-card { background: #fcfcfc; border: 1px solid #ddd; padding: 12px; border-radius: 8px; margin-bottom: 12px; position: relative; font-size: 11px; border-left: 5px solid #fbc02d; }
+ .btn-remove-comp { position: absolute; top: 5px; right: 5px; background: #c62828; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 10px; }
+ .dark-toggle-btn { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 12px 20px; border-radius: 30px; border: none; background: #333; color: #fff; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+
+ body.dark-mode { background-color: #0d0d0d; color: #eee; }
+ body.dark-mode .main-content, body.dark-mode .side-panel, body.dark-mode .variables-panel, body.dark-mode #area-contracheque { background-color: #1a1a1a !important; border-color: #333 !important; color: #fff !important; }
+ body.dark-mode th, body.dark-mode .info-row, body.dark-mode .comp-card { background-color: #262626 !important; border-color: #3d3d3d !important; color: #fff !important; }
+ body.dark-mode td, body.dark-mode .info-value, body.dark-mode p, body.dark-mode .info-label, body.dark-mode span { color: #fff !important; }
+ body.dark-mode .input-item input, body.dark-mode .input-item select { background-color: #2a2a2a; border-color: #444; color: #fff; }
+ body.dark-mode .row-total { background-color: #1e3a5a; }
+ body.dark-mode .row-liquido { background-color: #4a4a10; color: #fff !important; }
+ body.dark-mode label, body.dark-mode .variables-title { color: #fbc02d !important; }
+
+ @media (max-width: 1000px) {
+  .container { flex-direction: column; align-items: center; }
+  .side-panel { width: 100%; position: static; }
+  .dashboard-header { flex-direction: column; }
+  .vinculo-display, .btn-download-container { width: 100%; }
+ }
+ </style>
+</head>
+<body>
+
+<button class="dark-toggle-btn" onclick="document.body.classList.toggle('dark-mode')">🌓 ALTERAR TEMA</button>
+
+<div class="container">
+ <div class="main-content">
+ <header class="dashboard-header">
+ <div class="vinculo-display">Comissionado Puros</div>
+ <div class="btn-download-container">
+ <button class="btn-download" onclick="baixarImagem()">💾 Salvar Imagem</button>
+ </div>
+ </header>
+
+ <section class="variables-panel">
+ <div class="variables-title">Variáveis de Cálculo</div>
+ <div class="input-grid">
+ <div class="input-item">
+ <label>Símbolo do Cargo</label>
+ <select id="select-sigla-cargo"></select>
+ </div>
+ <div class="input-item">
+ <label>Aux. Saúde (Base)</label>
+ <input type="text" id="input-saude-mask" value="0,00" oninput="mascaraMoeda(this)">
+ <label class="checkbox-label"><input type="checkbox" id="check-saude-extra"> +50% (>50 anos / Doença)</label>
+ </div>
+ <div class="input-item">
+ <label>Aux. Transporte</label>
+ <input type="text" id="input-transp-mask" value="246,40" oninput="mascaraMoeda(this)">
+ <label class="checkbox-label"><input type="checkbox" id="check-pecunia"> Pecúnia Duplicada</label>
+ </div>
+ <div class="input-item">
+ <label>Dias Úteis (Desconto Transp.)</label>
+ <input type="number" id="input-dias-uteis" value="22" min="0" max="31" oninput="updateContracheque()">
+ </div>
+ <div class="input-item">
+ <label>Qtd. Filhos (Creche)</label>
+ <input type="number" id="input-filhos-qtd" value="0" min="0" oninput="updateContracheque()">
+ </div>
+ <div class="input-item">
+ <label>Qtd. Dependentes (IR)</label>
+ <input type="number" id="input-dep-ir" value="0" min="0" oninput="updateContracheque()">
+ </div>
+ <div class="input-item">
+ <label>Aux. Alimentação (Calculado)</label>
+ <input type="text" id="input-alim-mask" value="1.359,28" readonly>
+ </div>
+ </div>
+ </section>
+
+ <div class="contracheque-wrapper">
+ <div id="area-contracheque">
+ <div class="header-container"><span class="header-titulo">SIMULAÇÃO - COMISSIONADOS 2026</span></div>
+ <div class="info-row">
+ <div class="info-label">Simb. Cargo:</div> <div class="info-value" id="lbl-sigla-cargo">-</div>
+ <div class="info-label">Vínculo:</div> <div class="info-value">Comissionado</div>
+ </div>
+ <table><thead><tr><th>RUBRICA</th><th class="td-valor">VALOR</th></tr></thead><tbody id="corpo-vencimentos"></tbody></table>
+ <table><tbody id="corpo-descontos"></tbody></table>
+ <div class="rodape">
+ <div style="background-color: #ffebee; color: #c62828; font-weight: bold; padding: 5px; border: 1px solid #c62828; border-radius: 4px; font-size: 11px; margin-bottom: 10px; width: 90%;">
+ AVISO: ESTA É UMA SIMULAÇÃO ESTIMATIVA E NÃO SUBSTITUI O CONTRACHEQUE OFICIAL. VALORES SUJEITOS A ALTERAÇÕES.
+ </div>
+ <div class="footer-logos">
+ <img src="https://i.ibb.co/FkLCjrFV/Capturar-removebg-preview-1.png" class="footer-logo"> 
+ <img src="https://i.ibb.co/yc32bwv5/Logo-DGF-upscaled-Photoroom.png" class="footer-logo">
+ </div>
+ <div>DGF-NUGOV-2026</div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <aside class="side-panel">
+ <h3 style="color: #204b7b; margin-top: 0;">📊 Comparativo</h3>
+ <button class="btn-add-comp" onclick="addSituacao()">➕ Adicionar Cenário Atual</button>
+ <div id="lista-comparativos"></div>
+ </aside>
+</div>
+
+<script>
+ /* LÓGICA E DADOS ORIGINAIS PRESERVADOS[cite: 3, 6] */
+ const AJUSTES_SALARIAIS = [1.00];
+ const AJUSTES_ALIMENTACAO = [1.00];
+ const comissionadosData = [{s: "APJC", b: 1319.77, r: 1583.72},{s: "DGAPJC", b: 12260.68, r: 14712.82},{s: "DGPJC", b: 13078.07, r: 15693.68},{s: "DASPJC", b: 7028.09, r: 8433.71},{s: "DSPJC", b: 7590.35, r: 9108.42},{s: "MPJC", b: 6559.35, r: 7871.22},{s: "PJC", b: 8433.72, r: 10120.46},{s: "PJC-II", b: 7590.35, r: 9108.42},{s: "PJC-III", b: 7028.09, r: 8433.71},{s: "PJC-IV", b: 4216.80, r: 5060.16},{s: "PJC-V", b: 3092.36, r: 3710.83},{s: "PJC-VI", b: 2634.71, r: 3161.65},{s: "PJC-VII", b: 2266.58, r: 2719.90},{s: "SPJC", b: 8996.05, r: 10795.26}];
+ const getFatorAcumulado = (lista) => lista.reduce((acc, curr) => acc * curr, 1);
+ function formatarParaMoeda(valor) { return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+ function mascaraMoeda(i) {
+  let v = i.value.replace(/\D/g, "");
+  v = (v / 100).toFixed(2) + ""; v = v.replace(".", ",");
+  v = v.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,"); v = v.replace(/(\d)(\d{3}),/g, "$1.$2,");
+  i.value = v; updateContracheque();
+ }
+ function parseMoeda(v) { return parseFloat(v.replace(/\./g, "").replace(",", ".")) || 0; }
+
+ window.onload = () => {
+  const sCC = document.getElementById('select-sigla-cargo');
+  comissionadosData.forEach(c => sCC.add(new Option(c.s, c.s)));
+  document.querySelectorAll('input, select').forEach(el => { el.addEventListener('change', updateContracheque); });
+  const fAlim = getFatorAcumulado(AJUSTES_ALIMENTACAO);
+  document.getElementById('input-alim-mask').value = formatarParaMoeda(1359.28 * fAlim);
+  updateContracheque();
+ };
+
+ /* ESTADO GLOBAL DO COMPARATIVO */
+ let cData = {};
+
+ function addSituacao() {
+  const container = document.getElementById('lista-comparativos');
+  const id = Date.now();
+  const card = document.createElement('div');
+  card.className = 'comp-card'; card.id = `comp-${id}`;
+  card.innerHTML = `
+   <button class="btn-remove-comp" onclick="document.getElementById('comp-${id}').remove()">X</button>
+   <div style="font-weight:bold; color:#204b7b; margin-bottom:5px; text-transform:uppercase;">CARGO: ${cData.cargo}</div>
+   <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+    <div style="color:#c62828;"><b>INSS:</b> ${cData.prev}</div>
+    <div style="color:#c62828;"><b>IR:</b> ${cData.ir}</div>
+    <div><b>Bruto:</b> ${cData.bruto}</div>
+   </div>
+   <div style="margin-top:8px; padding-top:8px; border-top:1px dashed #ccc;">
+    <div style="display:flex; justify-content:space-between; color:#2e7d32; font-size:14px; font-weight:900;"><span>LÍQUIDO:</span> <span>${cData.liq}</span></div>
+   </div>`;
+  container.prepend(card);
+ }
+
+ function updateContracheque() {
+  const f = v => v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+  const siglaCC = document.getElementById('select-sigla-cargo').value || comissionadosData[0].s;
+  const cc = comissionadosData.find(x => x.s === siglaCC);
+  const fSal = getFatorAcumulado(AJUSTES_SALARIAIS);
+  const fAlim = getFatorAcumulado(AJUSTES_ALIMENTACAO);
+  const salBase = cc.b * fSal;
+  const vRep = cc.r * fSal;
+  const alim = 1359.28 * fAlim;
+  
+  // REGRA SOLICITADA: AUXÍLIO SAÚDE = 10% DO BASE + REPRESENTAÇÃO[cite: 3]
+  const saudeSugerido = (salBase + vRep) * 0.10;
+  if (document.activeElement.id !== 'input-saude-mask') {
+      document.getElementById('input-saude-mask').value = formatarParaMoeda(saudeSugerido);
+  }
+
+  const transpFinal = parseMoeda(document.getElementById('input-transp-mask').value) * (document.getElementById('check-pecunia').checked ? 2 : 1);
+  const saudeFinal = parseMoeda(document.getElementById('input-saude-mask').value) * (document.getElementById('check-saude-extra').checked ? 1.5 : 1);
+  const vCreche = (parseInt(document.getElementById('input-filhos-qtd').value) || 0) * 300;
+  let bruto = salBase + vRep + alim + transpFinal + saudeFinal + vCreche;
+  
+  let inss = 0; const baseCalculoPrev = salBase + vRep;
+  const faixas = [{l:1621, a:0.075}, {l:2902.84, a:0.09}, {l:4354.27, a:0.12}, {l:8475.55, a:0.14}];
+  let anterior = 0; for (let faixa of faixas) { let valorFaixa = Math.min(baseCalculoPrev, faixa.l) - anterior; if (valorFaixa > 0) inss += valorFaixa * faixa.a; anterior = faixa.l; if (baseCalculoPrev <= faixa.l) break; }
+  const deducaoDep = Math.min((parseInt(document.getElementById('input-dep-ir').value) || 0) * 189.59, 607.20);
+  const baseIR = baseCalculoPrev - inss - deducaoDep; 
+  let irC = baseIR > 4664.68 ? (baseIR * 0.275) - 908.73 : baseIR > 3751.05 ? (baseIR * 0.225) - 675.49 : baseIR > 2826.65 ? (baseIR * 0.15) - 394.16 : baseIR > 2428.80 ? (baseIR * 0.075) - 182.16 : 0;
+  let irF = baseIR <= 5000 ? 0 : baseIR > 7350 ? Math.max(irC, 0) : Math.max(irC - (978.62 - (0.133145 * baseIR)), 0);
+  const dTr = ((salBase / 30) * 0.005) * (parseInt(document.getElementById('input-dias-uteis').value) || 0);
+  let totalDesc = inss + Math.max(irF, 0) + dTr;
+
+  /* ATUALIZAÇÃO DA TABELA[cite: 3, 6] */
+  document.getElementById('corpo-vencimentos').innerHTML = `<tr><td>SALÁRIO BASE</td><td class="td-valor">${f(salBase)}</td></tr><tr><td>REPRESENTAÇÃO</td><td class="td-valor">${f(vRep)}</td></tr><tr><td>AUXILIO ALIMENTAÇÃO</td><td class="td-valor">${f(alim)}</td></tr><tr><td>TRANSPORTE</td><td class="td-valor">${f(transpFinal)}</td></tr><tr><td>AUXILIO SAÚDE</td><td class="td-valor">${f(saudeFinal)}</td></tr>` + (vCreche > 0 ? `<tr><td>AUXÍLIO CRECHE</td><td class="td-valor">${f(vCreche)}</td></tr>` : '') + `<tr class="row-total"><td>BRUTO</td><td class="td-valor">${f(bruto)}</td></tr>`;
+  document.getElementById('corpo-descontos').innerHTML = `<tr><td>INSS (RGPS)</td><td class="td-valor">${f(inss)}</td></tr><tr><td>IMPOSTO DE RENDA</td><td class="td-valor">${f(Math.max(irF, 0))}</td></tr><tr><td>DESC. TRANSPORTE</td><td class="td-valor">${f(dTr)}</td></tr><tr class="row-total"><td>TOTAL DESCONTOS</td><td class="td-valor">${f(totalDesc)}</td></tr><tr class="row-liquido"><td>LÍQUIDO</td><td class="td-valor">${f(bruto - totalDesc)}</td></tr>`;
+  document.getElementById('lbl-sigla-cargo').textContent = siglaCC;
+
+  /* COLETA PARA COMPARATIVO[cite: 3, 6] */
+  cData = { cargo: siglaCC, prev: f(inss), ir: f(Math.max(irF, 0)), bruto: f(bruto), liq: f(bruto - totalDesc) };
+ }
+ function baixarImagem() { html2canvas(document.getElementById('area-contracheque'), {scale:2, useCORS: true}).then(c => { let l = document.createElement('a'); l.download = 'Contracheque.png'; l.href = c.toDataURL(); l.click(); }); }
+</script>
+</body>
+</html>
