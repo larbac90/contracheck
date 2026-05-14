@@ -45,7 +45,6 @@
  .footer-logo { height: 35px; width: auto; }
  .checkbox-label { display: flex; align-items: center; gap: 5px; font-size: 9px; font-weight: 800; color: #204b7b; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
 
- /* ESTILOS ADICIONAIS: PAINEL E DARK MODE[cite: 3, 6] */
  .side-panel { width: 380px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-top: 5px solid #fbc02d; position: sticky; top: 10px; }
  .btn-add-comp { width: 100%; padding: 12px; background: #204b7b; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
  .comp-card { background: #fcfcfc; border: 1px solid #ddd; padding: 12px; border-radius: 8px; margin-bottom: 12px; position: relative; font-size: 11px; border-left: 5px solid #fbc02d; }
@@ -53,7 +52,7 @@
  .dark-toggle-btn { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 12px 20px; border-radius: 30px; border: none; background: #333; color: #fff; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 
  body.dark-mode { background-color: #0d0d0d; color: #eee; }
- body.dark-mode .main-content, body.dark-mode .side-panel, body.dark-mode .variables-panel, body.dark-mode #area-contracheque { background-color: #1a1a1a !important; border-color: #333 !important; color: #fff !important; }
+ body.dark-mode .main-content, body.dark-mode .side-panel, body.dark-mode .variables-panel, body.dark-mode #area-contracheque { background-color: #1a1a1a !important; border-color: #333 !important; }
  body.dark-mode th, body.dark-mode .info-row, body.dark-mode .comp-card { background-color: #262626 !important; border-color: #3d3d3d !important; color: #fff !important; }
  body.dark-mode td, body.dark-mode .info-value, body.dark-mode p, body.dark-mode .info-label, body.dark-mode span { color: #fff !important; }
  body.dark-mode .input-item input, body.dark-mode .input-item select { background-color: #2a2a2a; border-color: #444; color: #fff; }
@@ -95,12 +94,12 @@
  <label class="checkbox-label"><input type="checkbox" id="check-saude-extra"> +50% (>50 anos / Doença)</label>
  </div>
  <div class="input-item">
- <label>Aux. Transporte</label>
- <input type="text" id="input-transp-mask" value="246,40" oninput="mascaraMoeda(this)">
+ <label>Aux. Transporte (Automático)</label>
+ <input type="text" id="input-transp-mask" value="246,40" readonly>
  <label class="checkbox-label"><input type="checkbox" id="check-pecunia"> Pecúnia Duplicada</label>
  </div>
  <div class="input-item">
- <label>Dias Úteis (Desconto Transp.)</label>
+ <label>Dias Úteis (Calcula Transporte)</label>
  <input type="number" id="input-dias-uteis" value="22" min="0" max="31" oninput="updateContracheque()">
  </div>
  <div class="input-item">
@@ -142,8 +141,8 @@
  </div>
 
  <aside class="side-panel">
- <h3 style="color: #204b7b; margin-top: 0;">📊 Comparativo</h3>
- <button class="btn-add-comp" onclick="addSituacao()">➕ Adicionar Cenário Atual</button>
+ <h3 style="color: #204b7b; margin-top: 0;">📊 Comparativo Detalhado</h3>
+ <button class="btn-add-comp" onclick="addSituacao()">➕ Fixar Cenário Atual</button>
  <div id="lista-comparativos"></div>
  </aside>
 </div>
@@ -172,7 +171,6 @@
   updateContracheque();
  };
 
- /* ESTADO GLOBAL DO COMPARATIVO */
  let cData = {};
 
  function addSituacao() {
@@ -204,16 +202,20 @@
   const vRep = cc.r * fSal;
   const alim = 1359.28 * fAlim;
   
-  // REGRA SOLICITADA: AUXÍLIO SAÚDE = 10% DO BASE + REPRESENTAÇÃO[cite: 3]
   const saudeSugerido = (salBase + vRep) * 0.10;
   if (document.activeElement.id !== 'input-saude-mask') {
       document.getElementById('input-saude-mask').value = formatarParaMoeda(saudeSugerido);
   }
 
-  const transpFinal = parseMoeda(document.getElementById('input-transp-mask').value) * (document.getElementById('check-pecunia').checked ? 2 : 1);
+  // REGRA SOLICITADA: CÁLCULO AUTOMÁTICO DO TRANSPORTE BASEADO NOS DIAS[cite: 3, 6]
+  const diasUteis = parseInt(document.getElementById('input-dias-uteis').value) || 0;
+  const valorPorDia = document.getElementById('check-pecunia').checked ? 22.40 : 11.20;
+  const transporteCalculado = diasUteis * valorPorDia;
+  document.getElementById('input-transp-mask').value = formatarParaMoeda(transporteCalculado);
+
   const saudeFinal = parseMoeda(document.getElementById('input-saude-mask').value) * (document.getElementById('check-saude-extra').checked ? 1.5 : 1);
   const vCreche = (parseInt(document.getElementById('input-filhos-qtd').value) || 0) * 300;
-  let bruto = salBase + vRep + alim + transpFinal + saudeFinal + vCreche;
+  let bruto = salBase + vRep + alim + transporteCalculado + saudeFinal + vCreche;
   
   let inss = 0; const baseCalculoPrev = salBase + vRep;
   const faixas = [{l:1621, a:0.075}, {l:2902.84, a:0.09}, {l:4354.27, a:0.12}, {l:8475.55, a:0.14}];
@@ -222,15 +224,14 @@
   const baseIR = baseCalculoPrev - inss - deducaoDep; 
   let irC = baseIR > 4664.68 ? (baseIR * 0.275) - 908.73 : baseIR > 3751.05 ? (baseIR * 0.225) - 675.49 : baseIR > 2826.65 ? (baseIR * 0.15) - 394.16 : baseIR > 2428.80 ? (baseIR * 0.075) - 182.16 : 0;
   let irF = baseIR <= 5000 ? 0 : baseIR > 7350 ? Math.max(irC, 0) : Math.max(irC - (978.62 - (0.133145 * baseIR)), 0);
-  const dTr = ((salBase / 30) * 0.005) * (parseInt(document.getElementById('input-dias-uteis').value) || 0);
+  const dTr = ((salBase / 30) * 0.005) * diasUteis;
   let totalDesc = inss + Math.max(irF, 0) + dTr;
 
   /* ATUALIZAÇÃO DA TABELA[cite: 3, 6] */
-  document.getElementById('corpo-vencimentos').innerHTML = `<tr><td>SALÁRIO BASE</td><td class="td-valor">${f(salBase)}</td></tr><tr><td>REPRESENTAÇÃO</td><td class="td-valor">${f(vRep)}</td></tr><tr><td>AUXILIO ALIMENTAÇÃO</td><td class="td-valor">${f(alim)}</td></tr><tr><td>TRANSPORTE</td><td class="td-valor">${f(transpFinal)}</td></tr><tr><td>AUXILIO SAÚDE</td><td class="td-valor">${f(saudeFinal)}</td></tr>` + (vCreche > 0 ? `<tr><td>AUXÍLIO CRECHE</td><td class="td-valor">${f(vCreche)}</td></tr>` : '') + `<tr class="row-total"><td>BRUTO</td><td class="td-valor">${f(bruto)}</td></tr>`;
+  document.getElementById('corpo-vencimentos').innerHTML = `<tr><td>SALÁRIO BASE</td><td class="td-valor">${f(salBase)}</td></tr><tr><td>REPRESENTAÇÃO</td><td class="td-valor">${f(vRep)}</td></tr><tr><td>AUXILIO ALIMENTAÇÃO</td><td class="td-valor">${f(alim)}</td></tr><tr><td>TRANSPORTE</td><td class="td-valor">${f(transporteCalculado)}</td></tr><tr><td>AUXILIO SAÚDE</td><td class="td-valor">${f(saudeFinal)}</td></tr>` + (vCreche > 0 ? `<tr><td>AUXÍLIO CRECHE</td><td class="td-valor">${f(vCreche)}</td></tr>` : '') + `<tr class="row-total"><td>BRUTO</td><td class="td-valor">${f(bruto)}</td></tr>`;
   document.getElementById('corpo-descontos').innerHTML = `<tr><td>INSS (RGPS)</td><td class="td-valor">${f(inss)}</td></tr><tr><td>IMPOSTO DE RENDA</td><td class="td-valor">${f(Math.max(irF, 0))}</td></tr><tr><td>DESC. TRANSPORTE</td><td class="td-valor">${f(dTr)}</td></tr><tr class="row-total"><td>TOTAL DESCONTOS</td><td class="td-valor">${f(totalDesc)}</td></tr><tr class="row-liquido"><td>LÍQUIDO</td><td class="td-valor">${f(bruto - totalDesc)}</td></tr>`;
   document.getElementById('lbl-sigla-cargo').textContent = siglaCC;
 
-  /* COLETA PARA COMPARATIVO[cite: 3, 6] */
   cData = { cargo: siglaCC, prev: f(inss), ir: f(Math.max(irF, 0)), bruto: f(bruto), liq: f(bruto - totalDesc) };
  }
  function baixarImagem() { html2canvas(document.getElementById('area-contracheque'), {scale:2, useCORS: true}).then(c => { let l = document.createElement('a'); l.download = 'Contracheque.png'; l.href = c.toDataURL(); l.click(); }); }
