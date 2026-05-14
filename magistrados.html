@@ -20,7 +20,7 @@
         .variables-panel { background-color: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #adb5bd; margin-bottom: 25px; }
         .variables-title { text-align: center; color: #204b7b; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
 
-        .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
         .input-item { display: flex; flex-direction: column; gap: 5px; }
         .input-item label { font-size: 10px; font-weight: 700; color: #204b7b; text-transform: uppercase; }
         .input-item input, .input-item select { padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; }
@@ -42,6 +42,9 @@
         .rodape { text-align: center; font-size: 9px; color: #6c757d; padding: 15px; border-top: 1px solid #dee2e6; display: flex; flex-direction: column; align-items: center; }
         .footer-logos { display: flex; gap: 15px; justify-content: center; margin-bottom: 10px; }
         .footer-logo { height: 35px; width: auto; }
+
+        .checkbox-item { flex-direction: row !important; align-items: center; gap: 10px !important; }
+        .checkbox-item input { width: auto; margin: 0; }
 
         @media (max-width: 600px) {
             .dashboard-header { flex-direction: column; }
@@ -67,8 +70,33 @@
                 <select id="mag"></select>
             </div>
             <div class="input-item">
-                <label>Auxílio Saúde</label>
-                <input type="number" id="saude" step="0.01">
+                <label>GPPIN (Filhos < 7 anos)</label>
+                <input type="number" id="dep_gppin" value="0" min="0">
+            </div>
+            <div class="input-item">
+                <label>Qtd. Dependentes (IR)</label>
+                <input type="number" id="dep_ir" value="0" min="0">
+            </div>
+            <div class="input-item">
+                <label>PVTAC Qtde.</label>
+                <select id="pvtac">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                </select>
+            </div>
+            <div class="input-item checkbox-item">
+                <input type="checkbox" id="cumulativo">
+                <label>Exercícios Cumulativos</label>
+            </div>
+            <div class="input-item">
+                <label>Auxílio Saúde (15%)</label>
+                <input type="number" id="saude" step="0.01" readonly>
             </div>
         </div>
     </section>
@@ -110,14 +138,17 @@
     ];
     
     const TETO = 8475.55;
-    const AJUSTES_SALARIAIS = [1.00]; // Fator de atualização importado dos comissionados
+    const AJUSTES_SALARIAIS = [1.00];
 
     const getFatorAcumulado = (lista) => lista.reduce((acc, curr) => acc * curr, 1);
 
     window.onload = () => {
         const s = document.getElementById('mag');
         mags.forEach((m, i) => s.add(new Option(m.n, i)));
-        s.onchange = document.getElementById('saude').oninput = update;
+        
+        document.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener(el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input', update);
+        });
         update();
     };
 
@@ -125,36 +156,49 @@
         const sel = mags[document.getElementById('mag').value];
         const f = v => v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
         
-        // Aplicação do fator de atualização sobre o subsídio original
         const fSal = getFatorAcumulado(AJUSTES_SALARIAIS);
         const subsidioAtualizado = sel.v * fSal;
 
-        let sInput = document.getElementById('saude').value;
-        let sVal;
+        // PVTAC: De 0 a 7, cada nível representa 5%
+        const nivelPvtac = parseInt(document.getElementById('pvtac').value) || 0;
+        const vPvtac = subsidioAtualizado * (nivelPvtac * 0.05);
 
-        // Regra: Auxílio Saúde (15%) automático ao trocar nível ou se vazio
-        if (sInput === "" || document.activeElement.id !== 'saude') {
-            sVal = subsidioAtualizado * 0.15;
-            document.getElementById('saude').value = sVal.toFixed(2);
-        } else {
-            sVal = parseFloat(sInput) || 0;
-        }
+        // Exercícios Cumulativos: 35% do subsídio
+        const isCumulativo = document.getElementById('cumulativo').checked;
+        const vCumulativo = isCumulativo ? (subsidioAtualizado * 0.35) : 0;
+
+        // GP-PIN: 3% do subsídio por dependente menor de 7 anos
+        const qtdDepGppin = parseInt(document.getElementById('dep_gppin').value) || 0;
+        const gppin = (subsidioAtualizado * 0.03) * qtdDepGppin;
+
+        // Dependentes IR
+        const qtdDepIr = parseInt(document.getElementById('dep_ir').value) || 0;
+
+        // Auxílio Saúde: Sempre 15% do subsídio
+        const sVal = subsidioAtualizado * 0.15;
+        document.getElementById('saude').value = sVal.toFixed(2);
 
         const funaprev = TETO * 0.14;
         const prevComp = (subsidioAtualizado - TETO) * 0.085;
-        const bIR = subsidioAtualizado - (funaprev + prevComp);
+        
+        // Base de cálculo do IR inclui Subsídio + PVTAC + GPPIN
+        const bIR = (subsidioAtualizado + vPvtac + gppin) - (funaprev + prevComp) - (qtdDepIr * 189.59);
         const ir = (bIR * 0.275) - 908.73;
-        const bruto = subsidioAtualizado + sVal;
+        
+        const bruto = subsidioAtualizado + vPvtac + vCumulativo + gppin + sVal;
         const totalDesc = funaprev + prevComp + ir;
         const liquido = bruto - totalDesc;
 
         document.getElementById('corpo-tabela').innerHTML = `
             <tr><td>SUBSÍDIO</td><td class="td-valor">${f(subsidioAtualizado)}</td></tr>
+            ${vPvtac > 0 ? `<tr><td>PVTAC (${nivelPvtac * 5}%)</td><td class="td-valor">${f(vPvtac)}</td></tr>` : ''}
+            ${vCumulativo > 0 ? `<tr><td>EXERCÍCIOS CUMULATIVOS (35%)</td><td class="td-valor">${f(vCumulativo)}</td></tr>` : ''}
+            ${gppin > 0 ? `<tr><td>GPPIN</td><td class="td-valor">${f(gppin)}</td></tr>` : ''}
             <tr><td>AUXÍLIO SAÚDE (15%)</td><td class="td-valor">${f(sVal)}</td></tr>
             <tr class="row-bruto"><td>BRUTO</td><td class="td-valor">${f(bruto)}</td></tr>
             <tr><td>FUNAPREV (14% TETO)</td><td class="td-valor">${f(funaprev)}</td></tr>
             <tr><td>PREV. COMPLEMENTAR</td><td class="td-valor">${f(prevComp)}</td></tr>
-            <tr><td>IMPOSTO DE RENDA</td><td class="td-valor">${f(ir)}</td></tr>
+            <tr><td>IMPOSTO DE RENDA</td><td class="td-valor">${f(Math.max(ir, 0))}</td></tr>
             <tr class="row-total-desc"><td>TOTAL DESCONTOS</td><td class="td-valor">${f(totalDesc)}</td></tr>
             <tr class="row-liquido"><td>LÍQUIDO</td><td class="td-valor">${f(liquido)}</td></tr>
         `;
