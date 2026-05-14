@@ -182,7 +182,7 @@
         const prevComp = (subsidioAtualizado - TETO) * 0.085;
         
         // Base de cálculo do IR inclui Subsídio + PVTAC + GPPIN
-        const bIR = (subsidioAtualizado + vPvtac + gppin) - (funaprev + prevComp) - (qtdDepIr * 189.59);
+        const bIR = (subsidioAtualizado) - (funaprev + prevComp) - (qtdDepIr * 189.59);
         const ir = (bIR * 0.275) - 908.73;
         
         const bruto = subsidioAtualizado + vPvtac + vCumulativo + gppin + sVal;
