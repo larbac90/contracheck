@@ -64,11 +64,17 @@
  body.dark-mode .row-liquido { background-color: #4a4a10; color: #fff !important; }
  body.dark-mode label, body.dark-mode .variables-title, body.dark-mode .group-title { color: #81c784 !important; }
 
+ /* REGRAS DE RESPONSIVIDADE ADICIONADAS ABAIXO */
  @media (max-width: 1000px) {
   .container { flex-direction: column; align-items: center; }
   .side-panel { width: 100%; position: static; }
-  .input-grid { grid-template-columns: 1fr 1fr; }
+ }
+ 
+ @media (max-width: 768px) {
+  .input-grid { grid-template-columns: 1fr; }
   .group-grid { grid-template-columns: 1fr; }
+  .dashboard-header { flex-direction: column; }
+  .radio-group-horizontal { flex-wrap: wrap; }
  }
  </style>
 </head>
@@ -119,7 +125,6 @@
    <select id="select-sigla-fg"><option value="">-- Nenhuma --</option></select>
   </div>
 
-  <!-- Dependentes e Risco agora acima do grupo -->
   <div class="input-item">
    <label>Dependentes (IR)</label>
    <input type="number" id="input-dep-ir" value="0" min="0" oninput="updateContracheque(false)">
@@ -139,7 +144,6 @@
      <label class="checkbox-label"><input type="checkbox" id="check-saude-extra">+50% (Idade/Doença)</label>
     </div>
 
-    <!-- Container dinâmico para Transporte Comum (Tec/Ana) -->
     <div id="box-transporte-comum" style="display: contents;">
         <div class="input-item">
             <label>Aux. Transporte</label>
@@ -152,7 +156,6 @@
         </div>
     </div>
 
-    <!-- Campo exclusivo Oficial (Alinhado via JS) -->
     <div class="input-item" id="box-indenizacao-transp" style="display:none;">
      <label>Indenização Transp.</label>
      <input type="text" id="input-indenizacao" value="2.065,00" readonly>
@@ -181,7 +184,7 @@
  <table><tbody id="corpo-descontos"></tbody></table>
  <div class="rodape">
  <div style="background-color: #ffebee; color: #c62828; font-weight: bold; padding: 5px; border: 1px solid #c62828; border-radius: 4px; font-size: 11px; margin-bottom: 10px; width: 90%;">
- AVISO: ESTA É UMA SIMULAÇÃO ESTIMATIVA E NÃO SUBSTITUI O CONTRACHEQUE OFICIAL. VALORES SUJEITOS A ALTERAÇÕES.
+ AVISO: ESTA É UMA SIMULAÇÃO ESTIMATIVA E NÃO SUBSTITUI O CONTRACHEQUE OFICIAL.
  </div>
  <div class="footer-logos">
  <img src="https://i.ibb.co/FkLCjrFV/Capturar-removebg-preview-1.png" class="footer-logo"> 
@@ -292,7 +295,6 @@
   const transporteCalculado = diasUteis * valorDiaTransp;
   if (mode !== 'OFICIAL') document.getElementById('input-transp-mask').value = formatarParaMoeda(transporteCalculado);
 
-  // LOGICA DE VISIBILIDADE E ALINHAMENTO DO GRUPO
   const boxComum = document.getElementById('box-transporte-comum');
   const boxIndeniza = document.getElementById('box-indenizacao-transp');
   const riscoItem = document.getElementById('item-risco-vida');
