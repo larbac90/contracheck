@@ -43,10 +43,9 @@
  .footer-logo { height: 35px; width: auto; }
  .checkbox-label { display: flex; align-items: center; gap: 5px; font-size: 9px; font-weight: 800; color: #204b7b; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
 
- /* ESTILOS ADICIONAIS: PAINEL, BOTÕES E DARK MODE[cite: 4, 7] */
+ /* CAMADAS ADICIONAIS: COMPARATIVO E DARK MODE[cite: 4, 7] */
  .side-panel { width: 380px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-top: 5px solid #2e7d32; position: sticky; top: 10px; }
- .btn-add-comp { width: 100%; padding: 12px; background: #204b7b; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
- .btn-share { width: 100%; padding: 10px; background: #25d366; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 12px; }
+ .btn-add-comp { width: 100%; padding: 12px; background: #204b7b; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
  .comp-card { background: #fcfcfc; border: 1px solid #ddd; padding: 12px; border-radius: 8px; margin-bottom: 12px; position: relative; font-size: 11px; border-left: 5px solid #2e7d32; }
  .btn-remove-comp { position: absolute; top: 5px; right: 5px; background: #c62828; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 10px; }
  .diff-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 5px; font-size: 10px; }
@@ -173,8 +172,7 @@
  </div>
 
  <aside class="side-panel">
- <h3 style="color: #2e7d32; margin-top: 0;">📊 Comparativo</h3>
- <button class="btn-share" onclick="compartilharResumo()">🔗 Compartilhar Resumo (Texto)</button>
+ <h3 style="color: #2e7d32; margin-top: 0;">📊 Comparativo Detalhado</h3>
  <button class="btn-add-comp" onclick="addSituacao()">➕ Fixar Cenário Atual</button>
  <div id="lista-comparativos"></div>
  </aside>
@@ -231,7 +229,7 @@
    <button class="btn-remove-comp" onclick="document.getElementById('comp-${id}').remove()">X</button>
    <div style="font-weight:bold; color:#2e7d32; margin-bottom:5px; text-transform:uppercase;">${cData.vinculo} - ${cData.padrao} ${diffPercent}</div>
    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-    <div><b>Grat/CC:</b> ${cData.grat}</div>
+    <div><b>FG ou CC:</b> ${cData.grat}</div>
     <div style="color:#c62828;"><b>Prev:</b> ${cData.prev}</div>
     <div style="color:#c62828;"><b>IR:</b> ${cData.ir}</div>
     <div><b>Bruto:</b> ${cData.bruto}</div>
@@ -240,12 +238,6 @@
     <div style="display:flex; justify-content:space-between; color:#2e7d32; font-size:14px; font-weight:900;"><span>LÍQUIDO:</span> <span>${cData.liq}</span></div>
    </div>`;
   container.prepend(card);
- }
-
- function compartilharResumo() {
-    const texto = `*SIMULAÇÃO TJPE 2026*\n📌 ${cData.vinculo} - ${cData.padrao}\n💰 Bruto: ${cData.bruto}\n📉 Descontos: Previdência (${cData.prev}) e IR (${cData.ir})\n✅ *LÍQUIDO: ${cData.liq}*`;
-    const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(texto);
-    window.open(url, '_blank');
  }
 
  function updateContracheque(resetSaude = true) {
@@ -274,6 +266,12 @@
   const aqInput = document.querySelector('input[name="aq"]:checked');
   let aqPercent = parseFloat(aqInput.value);
   let vAQ = parseInt(padraoSel.replace("P", "")) > 15 ? 0 : salBase * aqPercent;
+  document.getElementById('aq-warning').style.display = parseInt(padraoSel.replace("P", "")) > 15 ? "block" : "none";
+
+  document.getElementById('box-transporte-comum').style.display = (mode === 'OFICIAL' ? 'none' : 'flex');
+  document.getElementById('box-indenizacao-transp').style.display = (mode === 'OFICIAL' ? 'flex' : 'none');
+  document.getElementById('item-risco-vida').style.display = (mode === 'OFICIAL' ? 'flex' : 'none');
+  document.getElementById('box-dias-trabalhados').style.display = (mode === 'OFICIAL' ? 'none' : 'flex');
 
   const alim = 1359.28 * getFatorAcumulado(AJUSTES_ALIMENTACAO);
   const saudeFinal = parseMoeda(document.getElementById('input-saude-mask').value) * (document.getElementById('check-saude-extra').checked ? 1.5 : 1);
@@ -288,7 +286,8 @@
   let irC = bIR > 4664.68 ? (bIR * 0.275) - 908.73 : bIR > 3751.05 ? (bIR * 0.225) - 675.49 : bIR > 2826.65 ? (bIR * 0.15) - 394.16 : bIR > 2428.80 ? (bIR * 0.075) - 182.16 : 0;
   let irF = bIR2 <= 5000 ? 0 : bIR2 > 7350 ? Math.max(irC, 0) : Math.max(irC - (978.62 - (0.133145 * bIR2)), 0);
   let dTr = mode === 'OFICIAL' ? 0 : ((salBase / 30) * 0.005) * diasUteis;
-  let liqFinal = bruto - (prevBase + irF + dTr);
+  let totalDesc = prevBase + irF + dTr;
+  let liqFinal = bruto - totalDesc;
 
   /* UPDATE TABELA ORIGINAL[cite: 4, 7] */
   document.getElementById('corpo-vencimentos').innerHTML = `<tr><td>VENCIMENTO BASE</td><td class="td-valor">${f(salBase)}</td></tr>` +
@@ -301,7 +300,7 @@
   `<tr class="row-total"><td>BRUTO</td><td class="td-valor">${f(bruto)}</td></tr>`;
   document.getElementById('corpo-descontos').innerHTML = `<tr><td>PREVIDÊNCIA (14%)</td><td class="td-valor">${f(prevBase)}</td></tr><tr><td>I.R.R.F.</td><td class="td-valor">${f(irF)}</td></tr>` +
   (dTr > 0 ? `<tr><td>DESC. TRANSP.</td><td class="td-valor">${f(dTr)}</td></tr>` : '') +
-  `<tr class="row-total"><td>TOTAL DESCONTOS</td><td class="td-valor">${f(prevBase + irF + dTr)}</td></tr><tr class="row-liquido"><td>LÍQUIDO</td><td class="td-valor">${f(liqFinal)}</td></tr>`;
+  `<tr class="row-total"><td>TOTAL DESCONTOS</td><td class="td-valor">${f(totalDesc)}</td></tr><tr class="row-liquido"><td>LÍQUIDO</td><td class="td-valor">${f(liqFinal)}</td></tr>`;
 
   document.getElementById('lbl-sigla-cargo').textContent = ccSigla || "-";
   document.getElementById('lbl-sigla-fg').textContent = fgSigla || "-";
@@ -310,7 +309,7 @@
 
   cData = { vinculo: mode, padrao: padraoSel, grat: f(vRep + vFG + vAQ), prev: f(prevBase), ir: f(irF), bruto: f(bruto), liq: f(liqFinal) };
  }
- function baixarImagem() { html2canvas(document.getElementById('area-contracheque'), { scale:2, useCORS: true }).then(c => { let l = document.createElement('a'); l.download = 'Contracheque.png'; l.href = c.toDataURL(); l.click(); }); }
+ function baixarImagem() { html2canvas(document.getElementById('area-contracheque'), { scale:2, useCORS: true }).then(c => { let l = document.createElement('a'); l.download = 'Contracheque_TJPE.png'; l.href = c.toDataURL(); l.click(); }); }
 </script>
 </body>
 </html>
