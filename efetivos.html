@@ -209,7 +209,7 @@
 </div>
 
 <script>
- const AJUSTES_SALARIAIS = [1.053]; const AJUSTES_ALIMENTACAO = [1.053]; const AJUSTES_RISCO_VIDA = [1.053]; const AJUSTES_INDENIZACAO = [1.053]; 
+ const AJUSTES_SALARIAIS = [1.053]; const AJUSTES_ALIMENTACAO = [1.053]; const AJUSTES_RISCO_VIDA = [1.00]; const AJUSTES_INDENIZACAO = [1.00]; 
  const getFatorAcumulado = (lista) => lista.reduce((acc, curr) => acc * curr, 1);
  const tabelaSalarial = [{p: "P00", tecnico: 5858.86, oficial: 7252.72, analista: 7634.45},{p: "P01", tecnico: 6005.32, oficial: 7434.03, analista: 7825.32},{p: "P02", tecnico: 6164.45, oficial: 7631.04, analista: 8032.69},{p: "P03", tecnico: 6337.08, oficial: 7844.72, analista: 8257.59},{p: "P04", tecnico: 6524.04, oficial: 8076.13, analista: 8501.20},{p: "P05", tecnico: 6726.26, oficial: 8326.49, analista: 8764.72},{p: "P06", tecnico: 6944.85, oficial: 8597.11, analista: 9049.60},{p: "P07", tecnico: 7181.00, oficial: 8889.42, analista: 9357.29},{p: "P08", tecnico: 7435.92, oficial: 9204.99, analista: 9689.45},{p: "P09", tecnico: 7711.05, oficial: 9545.58, analista: 10047.97},{p: "P10", tecnico: 8007.94, oficial: 9913.07, analista: 10434.83},{p: "P11", tecnico: 8328.22, oficial: 10309.59, analista: 10852.20},{p: "P12", tecnico: 8827.94, oficial: 10928.18, analista: 11503.34},{p: "P13", tecnico: 9445.90, oficial: 11693.13, analista: 12308.58},{p: "P14", tecnico: 10201.54, oficial: 12628.60, analista: 13293.27},{p: "P15", tecnico: 11119.71, oficial: 13765.15, analista: 14489.66},{p: "P16", tecnico: 12231.66, oficial: 15141.69, analista: 15938.64},{p: "P17", tecnico: 13577.14, oficial: 16807.28, analista: 17691.87},{p: "P18", tecnico: 15206.39, oficial: 18824.14, analista: 19814.88},{p: "P19", tecnico: 17183.24, oficial: 21271.28, analista: 22390.82},{p: "P20", tecnico: 19588.89, oficial: 24249.28, analista: 25525.53},{p: "P21", tecnico: 22527.23, oficial: 27886.68, analista: 29354.38}];
  const comissionadosData = [{s: "APJC", b: 1319.77, r: 1583.72},{s: "DGAPJC", b: 12260.68, r: 14712.82},{s: "DGPJC", b: 13078.07, r: 15693.68},{s: "DASPJC", b: 7028.09, r: 8433.71},{s: "DSPJC", b: 7590.35, r: 9108.42},{s: "MPJC", b: 6559.35, r: 7871.22},{s: "PJC", b: 8433.72, r: 10120.46},{s: "PJC-II", b: 7590.35, r: 9108.42},{s: "PJC-III", b: 7028.09, r: 8433.71},{s: "PJC-IV", b: 4216.80, r: 5060.16},{s: "PJC-V", b: 3092.36, r: 3710.83},{s: "PJC-VI", b: 2634.71, r: 3161.65},{s: "PJC-VII", b: 2266.58, r: 2719.90},{s: "SPJC", b: 8996.05, r: 10795.26}];
@@ -319,8 +319,8 @@
 
   const alim = 1359.28 * getFatorAcumulado(AJUSTES_ALIMENTACAO);
   const saudeFinal = parseMoeda(document.getElementById('input-saude-mask').value) * (document.getElementById('check-saude-extra').checked ? 1.5 : 1);
-  const transpFinal = mode === 'OFICIAL' ? 2065.00 * getFatorAcumulado(AJUSTES_INDENIZACAO) : transporteCalculado;
-  const risco = mode === 'OFICIAL' ? 595.00 * getFatorAcumulado(AJUSTES_RISCO_VIDA) : 0;
+  const transpFinal = mode === 'OFICIAL' ? 2789.71 * getFatorAcumulado(AJUSTES_INDENIZACAO) : transporteCalculado;
+  const risco = mode === 'OFICIAL' ? 721.68 * getFatorAcumulado(AJUSTES_RISCO_VIDA) : 0;
   const vCreche = (parseInt(document.getElementById('input-filhos-qtd').value) || 0) * 300;
 
   let bruto = vencimentoBase + vAQ + rCC + vFG + alim + transpFinal + risco + saudeFinal + vCreche;
