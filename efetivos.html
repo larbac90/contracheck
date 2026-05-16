@@ -23,6 +23,7 @@
  .input-item label { font-size: 10px; font-weight: 700; color: #204b7b; text-transform: uppercase; }
  .input-item input, .input-item select { padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; color: #333; }
  .input-item input[readonly] { background-color: #e9ecef; }
+ #input-saude-mask.auto { background-color: #e9ecef; color: #6c757d; }
  
  .group-box { grid-column: 1 / -1; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; background: #f8f9fa; position: relative; margin-top: 10px; }
  .group-title { position: absolute; top: -10px; left: 15px; background: #fff; padding: 0 8px; font-size: 10px; font-weight: bold; color: #2e7d32; text-transform: uppercase; border: 1px solid #dee2e6; border-radius: 4px; }
@@ -141,6 +142,10 @@
     <div class="input-item">
      <label>Aux. Saúde</label>
      <input type="text" id="input-saude-mask" value="0,00" oninput="mascaraMoeda(this)">
+     <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+      <button id="saude-lock" data-locked="true" onclick="toggleSaudeLock()" type="button" title="Clique para editar manualmente" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0;line-height:1;">🔒</button>
+      <span id="saude-lock-label" style="font-size:9px;color:#6c757d;font-weight:600;text-transform:uppercase;">Automático (10%) - Clique para alterar</span>
+     </div>
      <label class="checkbox-label"><input type="checkbox" id="check-saude-extra">+50% (Idade/Doença)</label>
     </div>
 
@@ -228,6 +233,8 @@
    el.addEventListener('change', () => updateContracheque(el.name === 'vinculo' || el.id === 'select-padrao' || el.name === 'aq'));
   });
   updateContracheque(true);
+  document.getElementById('input-saude-mask').readOnly = true;
+  document.getElementById('input-saude-mask').classList.add('auto');
  };
 
  let cData = {};
@@ -285,8 +292,9 @@
   let vAQ = parseInt(padraoSel.replace("P", "")) > 15 ? 0 : vencimentoBase * aqPercent;
   document.getElementById('aq-warning').style.display = parseInt(padraoSel.replace("P", "")) > 15 ? "block" : "none";
 
-  const saudeSugerido = (vencimentoBase + rCC + vFG + vAQ) * 0.10;
-  if (resetSaude || document.activeElement.id !== 'input-saude-mask') {
+  const saudeSugerido = (vencimentoBase + rCC + vAQ) * 0.10;
+  const saudeManual = document.getElementById('saude-lock').dataset.locked === 'false';
+  if (!saudeManual && (resetSaude || document.activeElement.id !== 'input-saude-mask')) {
       document.getElementById('input-saude-mask').value = formatarParaMoeda(saudeSugerido);
   }
 
@@ -344,6 +352,32 @@
   document.getElementById('lbl-nome-cargo').textContent = mode;
   document.getElementById('lbl-nome-fg').textContent = padraoSel;
   cData = { vinculo: mode, padrao: padraoSel, bruto: f(bruto), prev: f(prevBase), ir: f(irF), liq: f(liqFinal) };
+ }
+ function toggleSaudeLock() {
+  const lock = document.getElementById('saude-lock');
+  const input = document.getElementById('input-saude-mask');
+  const label = document.getElementById('saude-lock-label');
+  const isLocked = lock.dataset.locked === 'true';
+  if (isLocked) {
+   lock.dataset.locked = 'false';
+   lock.textContent = '🔓';
+   lock.title = 'Clique para voltar ao cálculo automático';
+   label.textContent = 'Manual';
+   label.style.color = '#c62828';
+   input.readOnly = false;
+   input.classList.remove('auto');
+   input.focus();
+   input.select();
+  } else {
+   lock.dataset.locked = 'true';
+   lock.textContent = '🔒';
+   lock.title = 'Clique para editar manualmente';
+   label.textContent = 'Automático (10%) - Clique para alterar';
+   label.style.color = '#6c757d';
+   input.readOnly = true;
+   input.classList.add('auto');
+   updateContracheque(false);
+  }
  }
  function baixarImagem() { html2canvas(document.getElementById('area-contracheque'), { scale:2, useCORS: true }).then(c => { let l = document.createElement('a'); l.download = 'Contracheque_TJPE.png'; l.href = c.toDataURL(); l.click(); }); }
 </script>
